@@ -1,0 +1,9 @@
+[submodule "H3"]
+	path = H3
+	url = https://github.com/CARV-ICS-FORTH/H3
+[submodule "s3proxy"]
+	path = s3proxy
+	url = https://github.com/gaul/s3proxy
+[submodule "Jclouds-H3"]
+	path = Jclouds-H3
+	url = https://github.com/malvag/Jclouds-H3
