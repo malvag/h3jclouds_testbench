@@ -1,8 +1,26 @@
+FROM malvag/h3:latest as h3engine
+RUN yum install -y java-8-openjdk-headless maven  && \
+    yum clean all
+COPY H3/JH3lib /root/JH3lib/
+#JH3 build
+WORKDIR /root/JH3lib 
+RUN mvn clean install
+
+#H3Jclouds build with jdk8
+COPY Jclouds-H3 /root/h3Jclouds/
+WORKDIR /root/h3Jclouds 
+RUN mvn clean install -DskipTests=true -Drat.skip=true -Dcheckstyle.skip=true
+
+WORKDIR /root
+RUN rm -rf JH3lib h3Jclouds
+
+
+
 # Multistage - Builder
 FROM maven:3.5.0-jdk-8-alpine as s3proxy-builder
 
 WORKDIR /root
-COPY --from=malvag/h3 /root/.m2/ /root/.m2/
+COPY --from=h3engine /root/.m2/ /root/.m2/
 
 COPY s3proxy /opt/s3proxy/
 WORKDIR /opt/s3proxy
@@ -11,7 +29,7 @@ RUN mvn package -DskipTests
 ################################################################################
 # Builder image
 ################################################################################
-FROM malvag/h3:latest as h3engine
+FROM h3engine as s3proxy-onH3
 
 WORKDIR /opt/s3proxy
 
@@ -40,15 +58,12 @@ ENV \
     JCLOUDS_KEYSTONE_VERSION="" \
     JCLOUDS_BASEDIR="file:///data/h3container" \
     JCLOUDS_KEYSTONE_SCOPE="" \
-    JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME="" \
-    JAVA_HOME="/usr/lib/jvm/jre-11-openjdk" \
-    PATH="$PATH:/usr/lib/jvm/jre-11-openjdk/bin"
+    JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME=""
 
 
 EXPOSE 8080
 VOLUME /data
 
-#remove java's 1.8 symbolic link to let it bind with java 11 jre
 RUN mkdir /data/h3container
 
 ENTRYPOINT ["/opt/s3proxy/run-docker-container.sh"]
