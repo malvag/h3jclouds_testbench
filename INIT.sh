@@ -11,6 +11,9 @@ mv s3proxy/pom_new.xml s3proxy/pom.xml
 #populate s3proxy with its config file / keystore
 cp config/s3proxy.conf s3proxy/
 cp config/keystore.jks s3proxy/
+
+rm -f s3proxy/src/main/resources/run-docker-container.sh
+cp config/run-docker-container.sh s3proxy/src/main/resources/
 # ---------
 
 # remove JH3lib from .dockerignore
